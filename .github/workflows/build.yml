@@ -1,4 +1,4 @@
-name: Build IPA
+name: "Build IPA (Dopamine style)"
 
 on:
   workflow_dispatch:
@@ -14,44 +14,47 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup environment
-        run: |
-          echo "CI=true" >> $GITHUB_ENV
+      - name: Setup Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
 
       - name: Install dependencies
         run: |
           brew update
           brew install ldid make
 
-      - name: Inspect project
-        run: |
-          xcodebuild -version
-          xcodebuild -list -project darksword-kexploit-fun.xcodeproj
-
-      - name: Build archive
+      - name: Build app
         run: |
           xcodebuild \
             -project darksword-kexploit-fun.xcodeproj \
             -scheme darksword-kexploit-fun \
             -configuration Release \
-            -archivePath build/app.xcarchive \
+            -sdk iphoneos \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            archive
+            build
 
-      - name: Export IPA
+      - name: Find .app
         run: |
-          mkdir -p build/ipa
-      
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/app.xcarchive \
-            -exportPath build/ipa \
-            -exportOptionsPlist ExportOptions.plist
+          find . -name "*.app"
+
+      - name: Create IPA (manual packaging)
+        run: |
+          set -e
+
+          APP_PATH=$(find build -name "*.app" | head -n 1)
+
+          echo "Using app: $APP_PATH"
+
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+
+          zip -r app.ipa Payload
+
+          ls -lah
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: ipa
-          path: build/ipa/*.ipa
+          path: app.ipa
