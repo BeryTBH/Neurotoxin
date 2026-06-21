@@ -21,20 +21,12 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install ldid || true
+          brew install ldid make
 
       - name: Inspect project
         run: |
           xcodebuild -version
           xcodebuild -list -project darksword-kexploit-fun.xcodeproj
-
-      - name: Patch Run Scripts for CI
-        run: |
-          echo "Disabling Run Script phases for CI safety..."
-
-          find . -name "*.pbxproj" | while read file; do
-            sed -i '' 's/shellScript = "/shellScript = "if [ \"$CI\" = \"true\" ]; then exit 0; fi; /g' "$file"
-          done
 
       - name: Build archive
         run: |
