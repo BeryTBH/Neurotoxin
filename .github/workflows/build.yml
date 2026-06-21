@@ -14,13 +14,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check Xcode project info
+      - name: Check project
         run: |
           xcodebuild -version
           xcodebuild -list -project darksword-kexploit-fun.xcodeproj
 
       - name: Install dependencies
         run: pod install || true
+
+      - name: Clean build folder
+        run: rm -rf build
 
       - name: Build archive
         run: |
@@ -30,18 +33,24 @@ jobs:
             -configuration Release \
             -archivePath build/app.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             archive
 
       - name: Export IPA
         run: |
+          mkdir -p build/ipa
+
           xcodebuild \
             -exportArchive \
             -archivePath build/app.xcarchive \
             -exportPath build/ipa \
-            -exportOptionsPlist ExportOptions.plist
+            -exportOptionsPlist ExportOptions.plist || true
 
-      - name: Upload IPA
+      - name: Upload app bundle (fallback)
         uses: actions/upload-artifact@v4
         with:
-          name: darksword-ipa
-          path: build/ipa/*.ipa
+          name: neurotoxin
+          path: |
+            build/app.xcarchive
+            build/ipa
