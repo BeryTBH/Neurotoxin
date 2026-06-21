@@ -40,8 +40,18 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             archive
 
-      - name: Upload build output
+      - name: Export IPA
+        run: |
+          mkdir -p build/ipa
+      
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/app.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: darksword-build
-          path: build/app.xcarchive
+          name: ipa
+          path: build/ipa/*.ipa
