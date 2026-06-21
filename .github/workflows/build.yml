@@ -14,19 +14,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check project
+      - name: Setup environment
+        run: |
+          echo "CI=true" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install ldid || true
+
+      - name: Inspect project
         run: |
           xcodebuild -version
           xcodebuild -list -project darksword-kexploit-fun.xcodeproj
 
-      - name: Install dependencies
-        run: pod install || true
+      - name: Patch Run Scripts for CI
+        run: |
+          echo "Disabling Run Script phases for CI safety..."
 
-      - name: Clean build folder
-        run: rm -rf build
-
-      - name: CI flag
-        run: echo "CI=true" >> $GITHUB_ENV
+          find . -name "*.pbxproj" | while read file; do
+            sed -i '' 's/shellScript = "/shellScript = "if [ \"$CI\" = \"true\" ]; then exit 0; fi; /g' "$file"
+          done
 
       - name: Build archive
         run: |
@@ -40,20 +48,8 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             archive
 
-      - name: Export IPA
-        run: |
-          mkdir -p build/ipa
-
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/app.xcarchive \
-            -exportPath build/ipa \
-            -exportOptionsPlist ExportOptions.plist || true
-
-      - name: Upload app bundle (fallback)
+      - name: Upload build output
         uses: actions/upload-artifact@v4
         with:
-          name: neurotoxin
-          path: |
-            build/app.xcarchive
-            build/ipa
+          name: darksword-build
+          path: build/app.xcarchive
