@@ -25,6 +25,9 @@ jobs:
       - name: Clean build folder
         run: rm -rf build
 
+      - name: CI flag
+        run: echo "CI=true" >> $GITHUB_ENV
+
       - name: Build archive
         run: |
           xcodebuild \
