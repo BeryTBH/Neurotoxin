@@ -29,6 +29,7 @@ jobs:
             -scheme darksword-kexploit-fun \
             -configuration Release \
             -archivePath build/app.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
             archive
 
       - name: Export IPA
