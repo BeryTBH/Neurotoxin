@@ -1,0 +1,46 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Xcode project info
+        run: |
+          xcodebuild -version
+          xcodebuild -list -project darksword-kexploit-fun.xcodeproj
+
+      - name: Install dependencies
+        run: pod install || true
+
+      - name: Build archive
+        run: |
+          xcodebuild \
+            -project darksword-kexploit-fun.xcodeproj \
+            -scheme darksword-kexploit-fun \
+            -configuration Release \
+            -archivePath build/app.xcarchive \
+            archive
+
+      - name: Export IPA
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/app.xcarchive \
+            -exportPath build/ipa \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: darksword-ipa
+          path: build/ipa/*.ipa
