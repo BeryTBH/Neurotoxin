@@ -4,6 +4,9 @@ Fork of darksword-kexploit-fun to become a tweak manager.
 ## Supposed to be support devices
 All iOS/iPadOS 17.0-26.0.1 devices, except A19/M5 devices
 
+# Known Bugs
+- Hide icon labels crashes Springboard. This will be fixed later on.
+
 ## Features
 - Escape app sandbox
 - Remotely control or force-crash userspace processes
